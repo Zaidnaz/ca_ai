@@ -4,75 +4,87 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Chartered Accountant</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --primary: #2563eb; --bg: #f1f5f9; }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
-        body { background: var(--bg); height: 100vh; display: flex; justify-content: center; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f3f4f6; margin: 0; display: flex; justify-content: center; height: 100vh; }
+        .app-container { width: 100%; max-width: 420px; background: white; display: flex; flex-direction: column; box-shadow: 0 4px 15px rgba(0,0,0,0.1); height: 100%; }
         
-        .app { width: 100%; max-width: 450px; background: white; display: flex; flex-direction: column; height: 100%; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
+        header { background-color: #1e3a8a; color: white; padding: 15px; text-align: center; }
+        header h1 { margin: 0; font-size: 1.2rem; }
+        header span { font-size: 0.8rem; opacity: 0.8; }
+
+        #chat-box { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; background: #fff; }
+        .message { padding: 10px 15px; border-radius: 15px; max-width: 85%; line-height: 1.4; font-size: 0.95rem; }
+        .user { background-color: #1e3a8a; color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
+        .ai { background-color: #f1f5f9; color: #1e293b; align-self: flex-start; border-bottom-left-radius: 2px; border: 1px solid #e2e8f0; }
         
-        header { padding: 20px; background: white; border-bottom: 1px solid #eee; display: flex; align-items: center; gap: 10px; }
-        .logo { width: 40px; height: 40px; background: var(--primary); color: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
-        
-        #chat { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
-        .msg { max-width: 85%; padding: 12px 16px; border-radius: 15px; font-size: 14px; line-height: 1.5; }
-        .user { background: var(--primary); color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
-        .ai { background: #f8fafc; border: 1px solid #e2e8f0; align-self: flex-start; border-bottom-left-radius: 2px; }
-        
-        .input-box { padding: 15px; border-top: 1px solid #eee; display: flex; gap: 10px; }
-        input { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 50px; outline: none; }
-        button { width: 45px; height: 45px; border-radius: 50%; background: var(--primary); color: white; border: none; cursor: pointer; }
-        button:disabled { opacity: 0.7; }
+        .input-area { padding: 15px; border-top: 1px solid #e5e7eb; display: flex; gap: 10px; background: white; }
+        input { flex: 1; padding: 12px; border: 1px solid #ccc; border-radius: 25px; outline: none; }
+        button { background-color: #1e3a8a; color: white; border: none; padding: 10px 20px; border-radius: 25px; cursor: pointer; font-weight: bold; }
+        button:disabled { opacity: 0.6; cursor: not-allowed; }
+        .loader { text-align: center; font-size: 0.8rem; color: #666; margin-bottom: 5px; display: none; }
     </style>
 </head>
 <body>
-    <div class="app">
+    <div class="app-container">
         <header>
-            <div class="logo"><i class="fa-solid fa-calculator"></i></div>
-            <div><b>AI Tax Expert</b><br><small>Gemini 2.5 Flash</small></div>
+            <h1>AI Tax Expert</h1>
+         
         </header>
-        <div id="chat">
-            <div class="msg ai">Hello! Ask me about GST, Income Tax, or Deductions.</div>
+        
+        <div id="chat-box">
+            <div class="message ai">Hello! I am your AI Chartered Accountant. Ask me about Income Tax, GST, or Deductions.</div>
         </div>
-        <div class="input-box">
-            <input type="text" id="prompt" placeholder="Type a message...">
-            <button id="send" onclick="ask()"><i class="fa-solid fa-paper-plane"></i></button>
+        <div id="loader" class="loader">Thinking...</div>
+
+        <div class="input-area">
+            <input type="text" id="user-input" placeholder="Type your question..." />
+            <button id="send-btn" onclick="sendMessage()">Send</button>
         </div>
     </div>
 
     <script>
-        const chat = document.getElementById('chat');
-        const inp = document.getElementById('prompt');
-        const btn = document.getElementById('send');
+        async function sendMessage() {
+            const input = document.getElementById('user-input');
+            const btn = document.getElementById('send-btn');
+            const chat = document.getElementById('chat-box');
+            const loader = document.getElementById('loader');
+            const text = input.value.trim();
 
-        async function ask() {
-            const text = inp.value.trim();
-            if(!text) return;
+            if (!text) return;
 
-            chat.innerHTML += `<div class="msg user">${text}</div>`;
-            inp.value = '';
+            // Add User Message
+            chat.innerHTML += `<div class="message user">${text}</div>`;
+            input.value = '';
             btn.disabled = true;
+            loader.style.display = 'block';
             chat.scrollTop = chat.scrollHeight;
 
             try {
-                // Talks to your secure Netlify backend
-                const req = await fetch('/.netlify/functions/gemini', {
+                // Call Netlify Function
+                const req = await fetch('/.netlify/functions/chat', {
                     method: 'POST',
-                    body: JSON.stringify({ text })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt: text })
                 });
                 const res = await req.json();
-                
+
+                if (res.error) throw new Error(res.error);
+
+                // Add AI Message
                 const cleanText = res.reply.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>');
-                chat.innerHTML += `<div class="msg ai">${cleanText}</div>`;
+                chat.innerHTML += `<div class="message ai">${cleanText}</div>`;
             } catch (e) {
-                chat.innerHTML += `<div class="msg ai" style="color:red">Error connecting to AI.</div>`;
+                chat.innerHTML += `<div class="message ai" style="color:red">Error: ${e.message}</div>`;
             }
-            
+
             btn.disabled = false;
+            loader.style.display = 'none';
             chat.scrollTop = chat.scrollHeight;
         }
+        
+        document.getElementById('user-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
     </script>
 </body>
 </html>
