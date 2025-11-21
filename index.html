@@ -2,315 +2,77 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Chartered Accountant</title>
-    
-    <!-- Google Fonts & Icons -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
     <style>
-        /* --- CSS STYLING --- */
-        :root {
-            --primary: #2563eb; /* Financial Blue */
-            --dark: #1e293b;
-            --light: #f8fafc;
-            --glass: rgba(255, 255, 255, 0.95);
-            --bg-grad: linear-gradient(135deg, #0f172a, #1e293b);
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: var(--bg-grad);
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: var(--dark);
-            overflow: hidden;
-        }
-
-        /* App Container */
-        .app-container {
-            width: 100%;
-            max-width: 480px;
-            height: 100vh;
-            background: var(--glass);
-            display: flex;
-            flex-direction: column;
-            position: relative;
-        }
-
-        @media (min-width: 768px) {
-            .app-container {
-                height: 90vh;
-                border-radius: 24px;
-                box-shadow: 0 20px 40px rgba(0,0,0,0.5);
-            }
-        }
-
-        /* Header */
-        header {
-            padding: 15px 20px;
-            background: white;
-            border-bottom: 1px solid #e2e8f0;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            z-index: 10;
-        }
+        :root { --primary: #2563eb; --bg: #f1f5f9; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
+        body { background: var(--bg); height: 100vh; display: flex; justify-content: center; }
         
-        .brand { display: flex; align-items: center; gap: 12px; }
-        .logo { 
-            width: 40px; height: 40px; 
-            background: var(--primary); color: white; 
-            border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; 
-        }
-        .brand h1 { font-size: 1rem; font-weight: 600; margin: 0; }
-        .brand p { font-size: 0.75rem; color: #64748b; margin: 0; }
+        .app { width: 100%; max-width: 450px; background: white; display: flex; flex-direction: column; height: 100%; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
         
-        .settings-icon { color: #94a3b8; cursor: pointer; font-size: 1.2rem; transition: 0.3s; }
-        .settings-icon:hover { color: var(--primary); transform: rotate(90deg); }
-
-        /* Chat Area */
-        #chat-box {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            scroll-behavior: smooth;
-        }
-
-        .message {
-            max-width: 85%;
-            padding: 12px 16px;
-            border-radius: 16px;
-            font-size: 0.95rem;
-            line-height: 1.5;
-            word-wrap: break-word;
-            animation: fadeIn 0.3s ease;
-        }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        .ai-message { background: #f1f5f9; border-bottom-left-radius: 4px; }
-        .user-message { background: var(--primary); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
-        .ai-message strong { color: var(--primary); }
-
-        /* Input Area */
-        .input-area {
-            padding: 15px;
-            background: white;
-            border-top: 1px solid #e2e8f0;
-            display: flex;
-            gap: 10px;
-        }
+        header { padding: 20px; background: white; border-bottom: 1px solid #eee; display: flex; align-items: center; gap: 10px; }
+        .logo { width: 40px; height: 40px; background: var(--primary); color: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
         
-        input {
-            flex: 1; padding: 12px 16px;
-            border-radius: 50px; border: 1px solid #cbd5e1;
-            outline: none; font-family: inherit;
-        }
-        input:focus { border-color: var(--primary); }
+        #chat { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
+        .msg { max-width: 85%; padding: 12px 16px; border-radius: 15px; font-size: 14px; line-height: 1.5; }
+        .user { background: var(--primary); color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
+        .ai { background: #f8fafc; border: 1px solid #e2e8f0; align-self: flex-start; border-bottom-left-radius: 2px; }
         
-        button.send-btn {
-            width: 48px; height: 48px;
-            border-radius: 50%; border: none;
-            background: var(--primary); color: white;
-            font-size: 1.1rem; cursor: pointer;
-            transition: transform 0.2s;
-        }
-        button.send-btn:active { transform: scale(0.9); }
-        button:disabled { background: #cbd5e1; cursor: not-allowed; }
-
-        /* Loading Animation */
-        .loader { display: none; gap: 4px; padding: 10px 15px; background: #f1f5f9; border-radius: 15px; width: fit-content; margin-bottom: 10px; margin-left: 20px; }
-        .dot { width: 8px; height: 8px; background: #94a3b8; border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; }
-        .dot:nth-child(1) { animation-delay: -0.32s; } .dot:nth-child(2) { animation-delay: -0.16s; }
-        @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
-
-        /* API Key Modal */
-        .modal-overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);
-            display: none; justify-content: center; align-items: center; z-index: 100;
-        }
-        .modal {
-            background: white; width: 90%; max-width: 320px;
-            padding: 25px; border-radius: 20px; text-align: center;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-        }
-        .modal h2 { font-size: 1.2rem; margin-bottom: 10px; color: var(--dark); }
-        .modal p { font-size: 0.85rem; color: #64748b; margin-bottom: 15px; }
-        .modal input { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #e2e8f0; border-radius: 8px; }
-        .modal button { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; }
-        .modal-close { margin-top: 10px; font-size: 0.8rem; color: #94a3b8; cursor: pointer; text-decoration: underline; }
+        .input-box { padding: 15px; border-top: 1px solid #eee; display: flex; gap: 10px; }
+        input { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 50px; outline: none; }
+        button { width: 45px; height: 45px; border-radius: 50%; background: var(--primary); color: white; border: none; cursor: pointer; }
+        button:disabled { opacity: 0.7; }
     </style>
 </head>
 <body>
-
-    <div class="app-container">
+    <div class="app">
         <header>
-            <div class="brand">
-                <div class="logo"><i class="fa-solid fa-calculator"></i></div>
-                <div>
-                    <h1>AI Tax Assistant</h1>
-                    <p>Gemini 2.5 Flash</p>
-                </div>
-            </div>
-            <i class="fa-solid fa-gear settings-icon" id="settings-btn" title="Settings"></i>
+            <div class="logo"><i class="fa-solid fa-calculator"></i></div>
+            <div><b>AI Tax Expert</b><br><small>Gemini 2.5 Flash</small></div>
         </header>
-
-        <div id="chat-box">
-            <div class="message ai-message">
-                Hello! I am your <strong>Chartered Accountant AI</strong>.<br><br>
-                I can help you with:<br>
-                • Income Tax & Deductions (80C)<br>
-                • GST Calculations<br>
-                • ITR Filing Queries<br><br>
-                <em>Please enter your API Key in the settings to start.</em>
-            </div>
+        <div id="chat">
+            <div class="msg ai">Hello! Ask me about GST, Income Tax, or Deductions.</div>
         </div>
-
-        <div class="loader" id="loader">
-            <div class="dot"></div><div class="dot"></div><div class="dot"></div>
-        </div>
-
-        <div class="input-area">
-            <input type="text" id="user-input" placeholder="Type your question here..." autocomplete="off">
-            <button class="send-btn" id="send-btn"><i class="fa-solid fa-paper-plane"></i></button>
-        </div>
-
-        <!-- API Key Modal -->
-        <div class="modal-overlay" id="api-modal">
-            <div class="modal">
-                <h2>Setup AI Key</h2>
-                <p>Paste your Google Gemini API Key below. It is saved locally in your browser.</p>
-                <input type="password" id="api-key-input" placeholder="AIzaSy..." autocomplete="off">
-                <button id="save-key-btn">Save & Start</button>
-                <div class="modal-close" id="close-modal">Close</div>
-            </div>
+        <div class="input-box">
+            <input type="text" id="prompt" placeholder="Type a message...">
+            <button id="send" onclick="ask()"><i class="fa-solid fa-paper-plane"></i></button>
         </div>
     </div>
 
-    <!-- APP LOGIC -->
-    <script type="module">
-        import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
+    <script>
+        const chat = document.getElementById('chat');
+        const inp = document.getElementById('prompt');
+        const btn = document.getElementById('send');
 
-        // State Variables
-        let genAI, model;
-        let apiKey = localStorage.getItem("gemini_api_key");
+        async function ask() {
+            const text = inp.value.trim();
+            if(!text) return;
 
-        // DOM Elements
-        const chatBox = document.getElementById("chat-box");
-        const userInput = document.getElementById("user-input");
-        const sendBtn = document.getElementById("send-btn");
-        const loader = document.getElementById("loader");
-        const apiModal = document.getElementById("api-modal");
-        const apiKeyInput = document.getElementById("api-key-input");
-        const saveKeyBtn = document.getElementById("save-key-btn");
-        const settingsBtn = document.getElementById("settings-btn");
-        const closeModal = document.getElementById("close-modal");
-
-        // --- 1. Initialization ---
-        function initAI() {
-            if (apiKey) {
-                try {
-                    genAI = new GoogleGenerativeAI(apiKey);
-                    // Use "gemini-1.5-flash" as it is the globally stable endpoint right now.
-                    // It maps to the latest reliable Flash model.
-                    model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-                    console.log("AI Initialized");
-                } catch (e) {
-                    console.error("Init failed", e);
-                }
-            } else {
-                // No key found, show popup after 1 second
-                setTimeout(() => apiModal.style.display = "flex", 1000);
-            }
-        }
-        initAI();
-
-        // --- 2. Settings & Modal Logic ---
-        saveKeyBtn.addEventListener("click", () => {
-            const key = apiKeyInput.value.trim();
-            if (key) {
-                localStorage.setItem("gemini_api_key", key);
-                apiKey = key;
-                initAI();
-                apiModal.style.display = "none";
-                appendMessage("API Key saved! You can now chat.", "ai");
-            }
-        });
-
-        settingsBtn.addEventListener("click", () => {
-            apiModal.style.display = "flex";
-            apiKeyInput.value = apiKey || "";
-        });
-
-        closeModal.addEventListener("click", () => apiModal.style.display = "none");
-
-        // --- 3. Chat Logic ---
-        function appendMessage(text, sender) {
-            const div = document.createElement("div");
-            div.classList.add("message", sender === "user" ? "user-message" : "ai-message");
-            
-            if(sender === "ai") {
-                let formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-                formattedText = formattedText.replace(/\n/g, '<br>');
-                div.innerHTML = formattedText;
-            } else {
-                div.innerText = text;
-            }
-
-            chatBox.appendChild(div);
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }
-
-        async function handleChat() {
-            const query = userInput.value.trim();
-            if (!query) return;
-
-            if (!model) { 
-                apiModal.style.display = "flex"; 
-                return; 
-            }
-
-            appendMessage(query, "user");
-            userInput.value = "";
-            sendBtn.disabled = true;
-            loader.style.display = "flex";
-            chatBox.scrollTop = chatBox.scrollHeight;
+            chat.innerHTML += `<div class="msg user">${text}</div>`;
+            inp.value = '';
+            btn.disabled = true;
+            chat.scrollTop = chat.scrollHeight;
 
             try {
-                const prompt = `You are a helpful, professional Chartered Accountant (CA). 
-                Answer this question related to finance, tax, GST, or accounting.
-                Keep answers concise (under 100 words), easy to read, and use bullet points if needed.
-                User Question: ${query}`;
-
-                const result = await model.generateContent(prompt);
-                const response = await result.response;
-                const text = response.text();
-
-                loader.style.display = "none";
-                appendMessage(text, "ai");
-
-            } catch (error) {
-                loader.style.display = "none";
-                console.error(error);
-                appendMessage("⚠️ Error: Connection failed. Please check your Internet or API Key.", "ai");
-            } finally {
-                sendBtn.disabled = false;
-                userInput.focus();
+                // Talks to your secure Netlify backend
+                const req = await fetch('/.netlify/functions/gemini', {
+                    method: 'POST',
+                    body: JSON.stringify({ text })
+                });
+                const res = await req.json();
+                
+                const cleanText = res.reply.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>');
+                chat.innerHTML += `<div class="msg ai">${cleanText}</div>`;
+            } catch (e) {
+                chat.innerHTML += `<div class="msg ai" style="color:red">Error connecting to AI.</div>`;
             }
+            
+            btn.disabled = false;
+            chat.scrollTop = chat.scrollHeight;
         }
-
-        sendBtn.addEventListener("click", handleChat);
-        userInput.addEventListener("keypress", (e) => { if (e.key === "Enter") handleChat(); });
     </script>
 </body>
 </html>
