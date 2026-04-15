@@ -5,6 +5,7 @@ A lightweight, mobile-responsive web application that acts as an AI Tax Assistan
 ## Features
 - **Smart Answers:** Powered by Google Gemini (Flash model) for fast, accurate tax advice.
 - **Mobile Responsive:** Looks great on phones and desktops.
+- **CA-Only Guardrails:** Responds only to Chartered Accountant topics and softly rejects unrelated questions.
 - **Secure Setup:** API Key is stored in the user's browser (LocalStorage), not in the code.
 - **Topics Covered:** GST, Income Tax (ITR), 80C Deductions, and general finance.
 
