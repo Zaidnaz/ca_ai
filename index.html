@@ -5,30 +5,185 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Chartered Accountant</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background-color: #f3f4f6; margin: 0; display: flex; justify-content: center; height: 100vh; }
-        .app-container { width: 100%; max-width: 420px; background: white; display: flex; flex-direction: column; box-shadow: 0 4px 15px rgba(0,0,0,0.1); height: 100%; }
-        
-        header { background-color: #1e3a8a; color: white; padding: 15px; text-align: center; }
-        header h1 { margin: 0; font-size: 1.2rem; }
-        header span { font-size: 0.8rem; opacity: 0.8; }
+        :root {
+            --bg-start: #eef4ff;
+            --bg-end: #f8fafc;
+            --panel: #ffffff;
+            --primary: #1e3a8a;
+            --primary-strong: #172d6d;
+            --text: #0f172a;
+            --muted: #64748b;
+            --line: #e2e8f0;
+            --ai-bubble: #f8fafc;
+            --danger: #c81e1e;
+        }
 
-        #chat-box { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; background: #fff; }
-        .message { padding: 10px 15px; border-radius: 15px; max-width: 85%; line-height: 1.4; font-size: 0.95rem; }
-        .user { background-color: #1e3a8a; color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
-        .ai { background-color: #f1f5f9; color: #1e293b; align-self: flex-start; border-bottom-left-radius: 2px; border: 1px solid #e2e8f0; }
-        
-        .input-area { padding: 15px; border-top: 1px solid #e5e7eb; display: flex; gap: 10px; background: white; }
-        input { flex: 1; padding: 12px; border: 1px solid #ccc; border-radius: 25px; outline: none; }
-        button { background-color: #1e3a8a; color: white; border: none; padding: 10px 20px; border-radius: 25px; cursor: pointer; font-weight: bold; }
-        button:disabled { opacity: 0.6; cursor: not-allowed; }
-        .loader { text-align: center; font-size: 0.8rem; color: #666; margin-bottom: 5px; display: none; }
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            min-height: 100dvh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: clamp(8px, 2vw, 20px);
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background: radial-gradient(circle at top left, var(--bg-start), var(--bg-end));
+            color: var(--text);
+        }
+
+        .app-container {
+            width: min(100%, 760px);
+            height: min(100dvh - 16px, 920px);
+            background: var(--panel);
+            display: flex;
+            flex-direction: column;
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 14px 36px rgba(15, 23, 42, 0.12);
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary), #2649a8);
+            color: #ffffff;
+            padding: 14px 16px;
+            text-align: center;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: clamp(1.05rem, 1.1rem + 0.15vw, 1.25rem);
+            letter-spacing: 0.2px;
+        }
+
+        .subtitle {
+            margin-top: 4px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.82rem;
+            opacity: 0.9;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #22c55e;
+            box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.18);
+        }
+
+        #chat-box {
+            flex: 1;
+            padding: clamp(12px, 2vw, 18px);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background: #ffffff;
+            scroll-behavior: smooth;
+        }
+
+        .message {
+            padding: 11px 14px;
+            border-radius: 14px;
+            max-width: min(92%, 560px);
+            line-height: 1.45;
+            font-size: 0.95rem;
+            animation: pop-in 0.2s ease-out;
+            word-break: break-word;
+        }
+
+        .user {
+            background-color: var(--primary);
+            color: #ffffff;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+
+        .ai {
+            background-color: var(--ai-bubble);
+            color: #1e293b;
+            align-self: flex-start;
+            border: 1px solid var(--line);
+            border-bottom-left-radius: 4px;
+        }
+
+        .input-area {
+            padding: 12px;
+            border-top: 1px solid var(--line);
+            display: flex;
+            gap: 10px;
+            background: #ffffff;
+        }
+
+        input {
+            flex: 1;
+            min-width: 0;
+            padding: 12px 14px;
+            border: 1px solid #cbd5e1;
+            border-radius: 12px;
+            outline: none;
+            font-size: 0.95rem;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+
+        button {
+            border: none;
+            background-color: var(--primary);
+            color: #ffffff;
+            padding: 0 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            min-width: 86px;
+            transition: background-color 0.15s ease, transform 0.08s ease;
+        }
+
+        button:hover:not(:disabled) { background-color: var(--primary-strong); }
+        button:active:not(:disabled) { transform: translateY(1px); }
+        button:disabled { opacity: 0.65; cursor: not-allowed; }
+
+        .loader {
+            text-align: center;
+            font-size: 0.82rem;
+            color: var(--muted);
+            padding: 0 12px 10px;
+            display: none;
+        }
+
+        .error-text { color: var(--danger); }
+
+        @keyframes pop-in {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 600px) {
+            body { padding: 0; }
+            .app-container {
+                width: 100%;
+                height: 100dvh;
+                max-height: none;
+                border-radius: 0;
+                border: none;
+            }
+            .input-area { padding: 10px; }
+            button { min-width: 76px; }
+        }
     </style>
 </head>
 <body>
     <div class="app-container">
         <header>
             <h1>AI Tax Expert</h1>
-         
+            <div class="subtitle"><span class="status-dot"></span>Online and ready to help</div>
         </header>
         
         <div id="chat-box">
@@ -43,6 +198,22 @@
     </div>
 
     <script>
+        function escapeHtml(text) {
+            return text
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function appendMessage(chatElement, roleClass, htmlContent, extraClass = '') {
+            const node = document.createElement('div');
+            node.className = `message ${roleClass} ${extraClass}`.trim();
+            node.innerHTML = htmlContent;
+            chatElement.appendChild(node);
+        }
+
         async function sendMessage() {
             const input = document.getElementById('user-input');
             const btn = document.getElementById('send-btn');
@@ -52,10 +223,11 @@
 
             if (!text) return;
 
-            // Add User Message
-            chat.innerHTML += `<div class="message user">${text}</div>`;
+            // Add user message safely before request starts.
+            appendMessage(chat, 'user', escapeHtml(text));
             input.value = '';
             btn.disabled = true;
+            input.disabled = true;
             loader.style.display = 'block';
             chat.scrollTop = chat.scrollHeight;
 
@@ -70,15 +242,18 @@
 
                 if (res.error) throw new Error(res.error);
 
-                // Add AI Message
-                const cleanText = res.reply.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>');
-                chat.innerHTML += `<div class="message ai">${cleanText}</div>`;
+                // Preserve bold formatting and line breaks while sanitizing response text.
+                const safeReply = escapeHtml(res.reply);
+                const cleanText = safeReply.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>');
+                appendMessage(chat, 'ai', cleanText);
             } catch (e) {
-                chat.innerHTML += `<div class="message ai" style="color:red">Error: ${e.message}</div>`;
+                appendMessage(chat, 'ai', `Error: ${escapeHtml(e.message)}`, 'error-text');
             }
 
             btn.disabled = false;
+            input.disabled = false;
             loader.style.display = 'none';
+            input.focus();
             chat.scrollTop = chat.scrollHeight;
         }
         
