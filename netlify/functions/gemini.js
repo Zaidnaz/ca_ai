@@ -9,7 +9,7 @@ export const handler = async (event) => {
         if (!apiKey) return { statusCode: 500, body: JSON.stringify({ reply: "API Key missing on server." }) };
 
         const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" }); // Using stable flash endpoint
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
         const { text } = JSON.parse(event.body);
         

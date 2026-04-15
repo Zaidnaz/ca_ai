@@ -1,6 +1,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const MODELS = ["gemini-2.5-flash", "gemini-1.5-flash"];
+const MODEL = "gemini-2.5-flash";
 const MAX_RETRIES = 2;
 
 function sleep(ms) {
@@ -12,29 +12,22 @@ function isRetryableError(error) {
     return message.includes("503") || message.includes("service unavailable") || message.includes("high demand");
 }
 
-async function generateWithFallback(genAI, prompt) {
-    let lastError;
+async function generateWithRetry(genAI, prompt) {
+    const model = genAI.getGenerativeModel({ model: MODEL });
 
-    for (const modelName of MODELS) {
-        const model = genAI.getGenerativeModel({ model: modelName });
+    for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+        try {
+            const result = await model.generateContent(`You are a Chartered Accountant. Answer this concisely: ${prompt}`);
+            const response = await result.response;
+            return response.text();
+        } catch (error) {
+            const shouldRetry = isRetryableError(error) && attempt < MAX_RETRIES;
+            if (!shouldRetry) throw error;
 
-        for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
-            try {
-                const result = await model.generateContent(`You are a Chartered Accountant. Answer this concisely: ${prompt}`);
-                const response = await result.response;
-                return response.text();
-            } catch (error) {
-                lastError = error;
-                const shouldRetry = isRetryableError(error) && attempt < MAX_RETRIES;
-                if (!shouldRetry) break;
-
-                const backoffMs = 400 * Math.pow(2, attempt);
-                await sleep(backoffMs);
-            }
+            const backoffMs = 400 * Math.pow(2, attempt);
+            await sleep(backoffMs);
         }
     }
-
-    throw lastError;
 }
 
 export const handler = async (event) => {
@@ -59,8 +52,8 @@ export const handler = async (event) => {
             return { statusCode: 400, body: JSON.stringify({ error: "Prompt is required" }) };
         }
 
-        // Generate content with model fallback + temporary error retry.
-        const text = await generateWithFallback(genAI, prompt);
+        // Generate content with temporary error retry.
+        const text = await generateWithRetry(genAI, prompt);
 
         return {
             statusCode: 200,
